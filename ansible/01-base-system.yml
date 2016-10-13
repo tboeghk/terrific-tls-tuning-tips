@@ -1,0 +1,70 @@
+---
+- name: Request let's encrypt certficates for a domain
+  hosts: tls
+  become: true
+  tasks:
+    - name: apply security updates
+      shell: yum -y update
+
+    - name: install base software
+      yum:
+        name: "{{ item }}"
+        state: latest
+      with_items:
+        - openssl
+        - nginx
+        - haproxy
+
+# TODO rpm -i http://dl.fedoraproject.org/pub/epel/6/x86_64/joe-3.7-4.el6.x86_64.rpm
+
+    - name: download certbot installer
+      get_url: 
+        url: "https://dl.eff.org/certbot-auto"
+        dest: "/usr/bin/certbot"
+        mode: 0755
+    
+    - name: create certbot configuration directory
+      file:
+        name: /etc/letsencrypt
+        state: directory
+     
+    - name: configure certbot
+      copy:
+        src: letsencrypt/cli.ini
+        dest: /etc/letsencrypt/cli.ini
+     
+    - name: install certbot & friends 
+      shell: /usr/bin/certbot --text --version
+    
+      # nginx
+    - name: configure nginx localhost site
+      copy:
+        src: nginx/localhost.conf
+        dest: /etc/nginx/conf.d/localhost.conf
+
+    - name: configure nginx
+      copy:
+        src: nginx/nginx.conf
+        dest: /etc/nginx/nginx.conf
+        force: true
+        validate: 'nginx -t -c %s'
+    
+    - name: start nginx
+      service:
+        name: nginx
+        state: restarted
+        enabled: true
+
+      # haproxy
+    - name: configure haproxy
+      copy:
+        src: haproxy/simple.cfg
+        dest: /etc/haproxy/haproxy.cfg
+        force: true
+        validate: 'haproxy -c -f %s'
+    
+    - name: start haproxy
+      service:
+        name: haproxy
+        state: restarted
+        enabled: true

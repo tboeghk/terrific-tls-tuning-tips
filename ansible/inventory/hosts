@@ -1,0 +1,7 @@
+# ---------------------------------------------------------------------
+# Configure tls test host connection params here
+# ---------------------------------------------------------------------
+
+# host definition
+[tls]
+ec2-52-208-210-222.eu-west-1.compute.amazonaws.com   ansible_user=ec2-user
