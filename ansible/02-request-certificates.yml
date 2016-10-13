@@ -1,0 +1,35 @@
+---
+- name: Request let's encrypt certificates
+  hosts: tls
+  become: true
+  vars:
+    domain: terrific-tls-tuning-tips.com
+  
+  tasks:
+    - name: register with let's encrypt
+      shell: certbot register --text -n --agree-tos
+      args:
+        creates: "/etc/letsencrypt/accounts"
+      
+    - name: create csr for our domain
+      shell: > 
+        openssl req -new -newkey rsa:2048 -sha256 -nodes 
+        -keyout /etc/ssl/certs/{{ domain }}.key 
+        -out /etc/ssl/certs/{{ domain }}.csr
+        -subj "/C=DE/ST=Hamburg/L=Hamburg/O=Shopping24 Gesellschaft fuer multimediale Anwendungen mbH/emailAddress=torsten.koester@s24.com/CN=wjax.{{ domain }}"
+      args:
+        creates: /etc/ssl/certs/{{ domain }}.csr
+      
+    - name: request certificate
+      shell: > 
+        certbot certonly --http-01-port 9080
+        --csr /etc/ssl/certs/{{ domain }}.csr
+        --cert-path /etc/ssl/certs/{{ domain }}.crt 
+        --chain-path /etc/ssl/certs/{{ domain }}.intermediate.crt
+        --fullchain-path /etc/ssl/certs/{{ domain }}.pem
+      args:
+        creates: /etc/ssl/certs/{{ domain }}.intermediate.crt
+        
+    - name: append private key to .pem
+      shell: cat /etc/ssl/certs/{{ domain }}.key >> /etc/ssl/certs/{{ domain }}.pem
+    

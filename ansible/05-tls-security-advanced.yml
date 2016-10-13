@@ -1,0 +1,35 @@
+---
+- name: Enable http tls security header
+  hosts: tls
+  become: true
+  vars:
+    domain: terrific-tls-tuning-tips.com
+  
+  tasks:
+    - name: create a backup csr for our domain
+      shell: > 
+        openssl req -new -newkey rsa:2048 -sha256 -nodes 
+        -keyout /etc/ssl/certs/{{ domain }}.backup.key 
+        -out /etc/ssl/certs/{{ domain }}.backup.csr
+        -subj "/C=DE/ST=Hamburg/L=Hamburg/O=Shopping24 Gesellschaft fuer multimediale Anwendungen mbH/emailAddress=torsten.koester@s24.com/CN=wjax.{{ domain }}"
+      args:
+        creates: /etc/ssl/certs/{{ domain }}.backup.csr
+  
+    - name: extract key pinning hashes
+      shell: >
+        openssl req -in /etc/ssl/certs/{{ domain }}.backup.csr -pubkey -noout | openssl rsa -pubin -outform der | openssl dgst -sha256 -binary | openssl enc -base64
+      register: hash
+      
+    - debug: var=hash.stdout
+  
+    - name: configure haproxy to use tls
+      copy:
+        src: haproxy/tls-secure++.cfg
+        dest: /etc/haproxy/haproxy.cfg
+        force: true
+        validate: 'haproxy -c -f %s'
+
+    - name: restart haproxy
+      service:
+        name: haproxy
+        state: restarted
