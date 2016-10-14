@@ -29,7 +29,7 @@ defaults
   timeout http-keep-alive 60s
 
 listen stats
-  bind *:9000 ssl crt terrific-tls-tuning-tips.com.pem alpn http/1.1
+  bind *:9000 ssl crt {{ domain }}.pem alpn http/1.1
   acl AUTH http_auth(admins)
   acl AUTH_ADMIN http_auth_group(admins) adm
   stats enable
@@ -49,9 +49,9 @@ frontend www-http
 
 frontend www-https
   mode tcp
-  bind *:443 ssl crt terrific-tls-tuning-tips.com.pem alpn h2,http/1.1
+  bind *:443 ssl crt {{ domain }}.pem alpn h2,http/1.1
   http-response add-header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" if { ssl_fc }
-  http-response add-header Public-Key-Pins "pin-sha256=\"PlrMv405TnYvLFPXxiBSytnDC6H6gPOc57k9QRP/hO8=\";pin-sha256=\"hW+H6Ls4rEZanTkbXTPxv4nxX1EIxihk4Rq17IFBLtA=\";max-age=86400; includeSubdomains; report-uri=\"https://s24securityreports.report-uri.io/r/default/hpkp/enforce\"" if { ssl_fc }
+  http-response add-header Public-Key-Pins "pin-sha256=\"{{ pkp_cert_hashes[0] }}\";pin-sha256=\"{{ pkp_cert_hashes[1] }}\";max-age=86400; includeSubdomains; report-uri=\"https://s24securityreports.report-uri.io/r/default/hpkp/enforce\"" if { ssl_fc }
   use_backend nginx-h2 if { ssl_fc_alpn -i h2 }
   default_backend nginx
 

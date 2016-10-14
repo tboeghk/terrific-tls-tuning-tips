@@ -1,5 +1,5 @@
 ---
-- name: Request let's encrypt certficates for a domain
+- name: Provision a basic http system
   hosts: tls
   become: true
   tasks:
@@ -17,33 +17,8 @@
         - gcc
         - pcre-devel 
         - openssl-devel
-
-# TODO rpm -i http://dl.fedoraproject.org/pub/epel/6/x86_64/joe-3.7-4.el6.x86_64.rpm
-# https://github.com/ssllabs/ssllabs-scan/releases/download/v1.3.0/ssllabs-scan_1.3.0-linux64.tgz
-#tar xzvf ssllabs-scan_1.3.0-linux64.tgz 
-#   14  chmod +x ssllabs-scan
-#   15  mv ssllabs-scan /usr/bin/ssllabs-scan
-
-# wget https://www.openssl.org/source/openssl-1.0.2j.tar.gz
-# tar xzvf openssl-1.0.2j.tar.gz 
-#   93  cd openssl-1.0.2j
-#       export STATICLIBSSL=/opt/libssl
-#   94  ./config --prefix=$STATICLIBSSL no-shared
-#   95  make
-#   96  make test
-#   97  make install_sw
-#   98  openssl version
-
-#wget http://www.haproxy.org/download/1.6/src/haproxy-1.6.9.tar.gz
-#   21  tar -zxvf haproxy-1.6.9.tar.gz 
-#   22  cd haproxy-1.6.9
-#   23  sudo yum install gcc pcre-devel openssl-devel
-#   24  make TARGET=linux2628 USE_PCRE=1 USE_OPENSSL=1 USE_ZLIB=1 SSL_INC=$STATICLIBSSL/include SSL_LIB=$STATICLIBSSL/lib ADDLIB=-ldl
-#   25  make install
-# rm /usr/sbin/haproxy
-# ln -s /usr/local/sbin/haproxy /usr/sbin/haproxy
-# haproxy -vv 
-
+        
+    - include: includes/compile-haproxy.yml
 
     - name: download certbot installer
       get_url: 
@@ -61,10 +36,11 @@
         src: letsencrypt/cli.ini
         dest: /etc/letsencrypt/cli.ini
      
+      # this might not be as scriptable as it should be. Call
+      # manually on errors :-(
     - name: install certbot & friends 
-      shell: /usr/bin/certbot --text --version
+      shell: /usr/bin/certbot --text --version --debug
     
-      # nginx
     - name: configure nginx localhost site
       copy:
         src: nginx/localhost.conf
@@ -83,10 +59,9 @@
         state: restarted
         enabled: true
 
-      # haproxy
     - name: configure haproxy
-      copy:
-        src: haproxy/simple.cfg
+      template: 
+        src: haproxy/simple.cfg.j2
         dest: /etc/haproxy/haproxy.cfg
         force: true
         validate: 'haproxy -c -f %s'

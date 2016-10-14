@@ -5,8 +5,8 @@
   
   tasks:
     - name: configure haproxy to negotiate h2 in alpn
-      copy:
-        src: haproxy/tls-http2.cfg
+      template:
+        src: haproxy/tls-http2.cfg.j2
         dest: /etc/haproxy/haproxy.cfg
         force: true
         validate: 'haproxy -c -f %s'

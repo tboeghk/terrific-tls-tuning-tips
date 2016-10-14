@@ -56,6 +56,6 @@
 
 - name: haproxy - link to new binary
   file:
-    src: /usr/sbin/haproxy
-    dest: /usr/local/sbin/haproxy
+    src: /usr/local/sbin/haproxy
+    dest: /usr/sbin/haproxy
     state: link

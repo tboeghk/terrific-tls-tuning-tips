@@ -13,16 +13,25 @@
       args:
         creates: /etc/ssl/certs/{{ domain }}.backup.csr
   
-    - name: extract key pinning hashes
+    - name: extract main key pinning hashe
+      shell: >
+        openssl req -in /etc/ssl/certs/{{ domain }}.csr -pubkey -noout | openssl rsa -pubin -outform der | openssl dgst -sha256 -binary | openssl enc -base64
+      register: hash
+      
+    - debug: var=hash.stdout
+
+    - name: extract backup key pinning hash
       shell: >
         openssl req -in /etc/ssl/certs/{{ domain }}.backup.csr -pubkey -noout | openssl rsa -pubin -outform der | openssl dgst -sha256 -binary | openssl enc -base64
       register: hash
       
     - debug: var=hash.stdout
+    
+    - pause: prompt="Put the key pinning hashes into the tls-secure++.cfg, tls-ttfb-tuned.cfg and tls-http2.cfg"
   
     - name: configure haproxy to use tls
-      copy:
-        src: haproxy/tls-secure++.cfg
+      template:
+        src: haproxy/tls-secure++.cfg.j2
         dest: /etc/haproxy/haproxy.cfg
         force: true
         validate: 'haproxy -c -f %s'

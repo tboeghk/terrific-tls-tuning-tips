@@ -14,8 +14,8 @@
         -respout /etc/ssl/certs/{{ domain }}.pem.ocsp
   
     - name: configure haproxy to use tls
-      copy:
-        src: haproxy/tls-ttfb-tuned.cfg
+      template:
+        src: haproxy/tls-ttfb-tuned.cfg.j2
         dest: /etc/haproxy/haproxy.cfg
         force: true
         validate: 'haproxy -c -f %s'

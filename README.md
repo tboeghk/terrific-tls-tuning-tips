@@ -5,11 +5,13 @@
 
 1. Install [Homebrew](http://brew.sh/) 
 1. Install Ansible: `brew install ansible`
-1. Launch a Instance that is publicly available. The instance needs to use a `CentOS` flavoured 
-   operating system like `CentOS` itself or Amazon Linux in EC2. Make sure you can ssh into the
-   machine using your ssh key.
+1. Launch a EC2 Instance that is publicly available. The instnace needs to run the lates
+   Amazon Linux. Make sure you can ssh into the machine using your ssh key and ports 
+   22,80,443 and 9000 are accessible.
+1. Put your hostname into the `inventory/hosts` file.
 1. let a url of your choice point to the public IP of that instance. In our case this 
-   is `wjax.terrific-tls-tuning-tips.com`.‚
+   is `wjax.terrific-tls-tuning-tips.com`.
+
 
 ## Provisioning
 
