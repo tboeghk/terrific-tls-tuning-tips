@@ -2,8 +2,6 @@
 - name: Speedup ttfb in tls mode
   hosts: tls
   become: true
-  vars:
-    domain: terrific-tls-tuning-tips.com
   
   tasks:
     - name: provide ocsp stapling information

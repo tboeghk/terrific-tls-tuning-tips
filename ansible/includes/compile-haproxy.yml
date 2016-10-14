@@ -1,0 +1,61 @@
+---
+- name: openssl - download
+  get_url:
+    url: https://www.openssl.org/source/openssl-1.0.2j.tar.gz
+    dest: /tmp/openssl-1.0.2j.tar.gz
+
+- name: openssl - unpack
+  shell: tar xzvf /tmp/openssl-1.0.2j.tar.gz
+  args:
+    chdir: /tmp
+  
+- name: openssl - configure
+  shell: ./config --prefix=/opt/libssl no-shared
+  args:
+    chdir: /tmp/openssl-1.0.2j
+
+- name: openssl - make
+  shell: make
+  args:
+    chdir: /tmp/openssl-1.0.2j
+
+- name: openssl - make test
+  shell: make test
+  args:
+    chdir: /tmp/openssl-1.0.2j
+
+- name: openssl - make install
+  shell: make install_sw
+  args:
+    chdir: /tmp/openssl-1.0.2j
+    
+- name: haproxy - download
+  get_url:
+    url: http://www.haproxy.org/download/1.6/src/haproxy-1.6.9.tar.gz
+    dest: /tmp/haproxy-1.6.9.tar.gz
+
+- name: haproxy - unpack
+  shell: tar xzvf /tmp/haproxy-1.6.9.tar.gz
+  args:
+    chdir: /tmp
+  
+- name: haproxy - make
+  shell: make TARGET=linux2628 USE_PCRE=1 USE_OPENSSL=1 USE_ZLIB=1 SSL_INC=/opt/libssl/include SSL_LIB=/opt/libssl/lib ADDLIB=-ldl
+  args:
+    chdir: /tmp/haproxy-1.6.9
+
+- name: haproxy - make install
+  shell: make install
+  args:
+    chdir: /tmp/haproxy-1.6.9
+
+- name: haproxy - remove existing binary
+  file:
+    name: /usr/sbin/haproxy
+    state: absent
+
+- name: haproxy - link to new binary
+  file:
+    src: /usr/sbin/haproxy
+    dest: /usr/local/sbin/haproxy
+    state: link

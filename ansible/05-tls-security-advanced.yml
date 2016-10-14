@@ -2,8 +2,6 @@
 - name: Enable http tls security header
   hosts: tls
   become: true
-  vars:
-    domain: terrific-tls-tuning-tips.com
   
   tasks:
     - name: create a backup csr for our domain
