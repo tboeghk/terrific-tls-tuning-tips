@@ -37,7 +37,7 @@
         dest: /etc/letsencrypt/cli.ini
      
       # this might not be as scriptable as it should be. Call
-      # manually on errors :-(
+      # manually on errors and re-run the playbook
     - name: install certbot & friends 
       shell: /usr/bin/certbot --text --version --debug
     
