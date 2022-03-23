@@ -1,0 +1,33 @@
+#cloud-config
+merge_how:
+ - name: list
+   settings: [append]
+ - name: dict
+   settings: [recurse_array]
+
+write_files:
+  - path: /etc/ssl/certs/tls-cert.key
+    owner: root:root
+    content: |
+      ${indent(6, tls_private_key_pem)}
+  - path: /etc/ssl/certs/tls-cert.crt
+    owner: root:root
+    content: |
+      ${indent(6, tls_cert_pem)}
+  - path: /etc/ssl/certs/tls-cert.pem
+    owner: root:root
+    content: |
+      ${indent(6, tls_cert_pem)}
+      ${indent(6, tls_cert_intermediate_pem)}
+
+runcmd:
+  # install mainline nginx
+  - echo "deb http://nginx.org/packages/debian `lsb_release -cs` nginx" > /etc/apt/sources.list.d/nginx.list
+  - curl -fsSL https://nginx.org/keys/nginx_signing.key | apt-key add -
+  - apt-get update
+  - apt -q -y -o Dpkg::Options::=--force-confdef install nginx
+
+  # launch nginx
+  - curl -sfL https://ssl-config.mozilla.org/ffdhe4096.txt > /etc/nginx/dhparam.pem
+  - systemctl enable nginx
+  - systemctl start nginx
