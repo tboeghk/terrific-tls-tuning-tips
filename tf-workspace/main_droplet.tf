@@ -11,6 +11,7 @@ data "digitalocean_image" "this" {
 resource "random_pet" "this" {
   keepers = {
     config = data.cloudinit_config.this.rendered
+    distro = data.digitalocean_image.this.id
   }
 }
 
@@ -22,6 +23,10 @@ data "cloudinit_config" "this" {
   part {
     content_type = "text/cloud-config"
     content      = file("../cloud-init/default.yaml")
+  }
+  part {
+    content_type = "text/cloud-config"
+    content      = file("../cloud-init/nginx-host-tls-configurations.yaml")
   }
   part {
     content_type = "text/cloud-config"
@@ -63,8 +68,23 @@ resource "digitalocean_firewall" "this" {
 
   inbound_rule {
     protocol         = "tcp"
-    port_range       = "443"
+    port_range       = "443-450"
     source_addresses = ["0.0.0.0/0", "::/0"]
+  }
+
+  outbound_rule {
+    protocol = "tcp"
+    destination_addresses = ["0.0.0.0/0", "::/0"]
+  }
+
+  outbound_rule {
+    protocol = "udp"
+    destination_addresses = ["0.0.0.0/0", "::/0"]
+  }
+
+  outbound_rule {
+    protocol = "icmp"
+    destination_addresses = ["0.0.0.0/0", "::/0"]
   }
 }
 

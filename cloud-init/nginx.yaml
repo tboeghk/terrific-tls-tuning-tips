@@ -6,19 +6,30 @@ merge_how:
    settings: [recurse_array]
 
 write_files:
-  - path: /etc/ssl/certs/tls-cert.key
+  - path: /etc/certs/tls-cert.key
     owner: root:root
     content: |
       ${indent(6, tls_private_key_pem)}
-  - path: /etc/ssl/certs/tls-cert.crt
+  - path: /etc/certs/tls-cert.crt
     owner: root:root
     content: |
       ${indent(6, tls_cert_pem)}
-  - path: /etc/ssl/certs/tls-cert.pem
+  - path: /etc/certs/tls-cert.pem
     owner: root:root
     content: |
       ${indent(6, tls_cert_pem)}
       ${indent(6, tls_cert_intermediate_pem)}
+  - path: /etc/nginx/conf.d/default.conf
+    owner: root:root
+    content: |
+      server {
+          listen 80 default_server;
+          listen [::]:80 default_server;
+
+          location / {
+              return 301 https://$host$request_uri;
+          }
+      }
 
 runcmd:
   # install mainline nginx
