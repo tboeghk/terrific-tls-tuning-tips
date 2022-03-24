@@ -31,9 +31,7 @@ data "cloudinit_config" "this" {
   part {
     content_type = "text/cloud-config"
     content = templatefile("../cloud-init/nginx.yaml", {
-      tls_private_key_pem       = acme_certificate.ecdsa.private_key_pem
-      tls_cert_pem              = acme_certificate.ecdsa.certificate_pem
-      tls_cert_intermediate_pem = acme_certificate.ecdsa.issuer_pem
+      tls_certs = local.certs
     })
   }
 }
@@ -73,17 +71,19 @@ resource "digitalocean_firewall" "this" {
   }
 
   outbound_rule {
-    protocol = "tcp"
+    protocol              = "tcp"
+    port_range            = "1-65535"
     destination_addresses = ["0.0.0.0/0", "::/0"]
   }
 
   outbound_rule {
-    protocol = "udp"
+    protocol              = "udp"
+    port_range            = "1-65535"
     destination_addresses = ["0.0.0.0/0", "::/0"]
   }
 
   outbound_rule {
-    protocol = "icmp"
+    protocol              = "icmp"
     destination_addresses = ["0.0.0.0/0", "::/0"]
   }
 }
