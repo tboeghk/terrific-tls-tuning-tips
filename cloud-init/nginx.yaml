@@ -6,22 +6,6 @@ merge_how:
    settings: [recurse_array]
 
 write_files:
-%{ for cert in tls_certs }
-  - path: /etc/certs/tls-cert-${cert.name}.key
-    owner: root:root
-    content: |
-      ${indent(6, cert.private_key_pem)}
-  - path: /etc/certs/tls-cert-${cert.name}.crt
-    owner: root:root
-    content: |
-      ${indent(6, cert.certificate_pem)}
-  - path: /etc/certs/tls-cert-${cert.name}.pem
-    owner: root:root
-    content: |
-      ${indent(6, cert.certificate_pem)}
-      ${indent(6, cert.issuer_pem)}
-%{ endfor }
-
   - path: /etc/nginx/conf.d/default.conf
     owner: root:root
     content: |

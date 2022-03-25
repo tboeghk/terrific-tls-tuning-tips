@@ -1,0 +1,36 @@
+#cloud-config
+merge_how:
+ - name: list
+   settings: [append]
+ - name: dict
+   settings: [recurse_array]
+
+write_files:
+%{ for cert in tls_certs }
+  - path: /etc/certs/tls-cert-${cert.name}.key
+    owner: root:root
+    content: |
+      ${indent(6, cert.private_key_pem)}
+  - path: /etc/certs/tls-cert-${cert.name}.crt
+    owner: root:root
+    content: |
+      ${indent(6, cert.certificate_pem)}
+  - path: /etc/certs/tls-cert-issuer-${cert.name}.crt
+    owner: root:root
+    content: |
+      ${indent(6, cert.issuer_pem)}
+  - path: /etc/certs/tls-cert-${cert.name}.pem
+    owner: root:root
+    content: |
+      ${indent(6, cert.certificate_pem)}
+      ${indent(6, cert.issuer_pem)}
+%{ endfor }
+
+runcmd:
+  # acquire ocsp staples for later
+  #openssl ocsp -noverify
+  #      -issuer /etc/ssl/certs/{{ domain }}.intermediate.crt
+  #      -cert /etc/ssl/certs/{{ domain }}.pem
+  #      -url http://ocsp.int-x1.letsencrypt.org \
+  #      -header "HOST" "ocsp.int-x1.letsencrypt.org" \
+  #      -respout /etc/ssl/certs/{{ domain }}.pem.ocsp

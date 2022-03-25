@@ -26,13 +26,17 @@ data "cloudinit_config" "this" {
   }
   part {
     content_type = "text/cloud-config"
-    content      = file("../cloud-init/nginx-host-tls-configurations.yaml")
+    content      = file("../cloud-init/tls-configurations.yaml")
   }
   part {
     content_type = "text/cloud-config"
-    content = templatefile("../cloud-init/nginx.yaml", {
+    content = templatefile("../cloud-init/tls-certificates.yaml", {
       tls_certs = local.certs
     })
+  }
+  part {
+    content_type = "text/cloud-config"
+    content = file("../cloud-init/nginx.yaml")
   }
 }
 
@@ -66,7 +70,7 @@ resource "digitalocean_firewall" "this" {
 
   inbound_rule {
     protocol         = "tcp"
-    port_range       = "443-450"
+    port_range       = "443-460"
     source_addresses = ["0.0.0.0/0", "::/0"]
   }
 
